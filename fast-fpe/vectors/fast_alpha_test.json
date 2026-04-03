@@ -1,0 +1,83 @@
+{
+  "algorithm": "FAST",
+  "generatorVersion": "0.1.0",
+  "notes": "Alphanumeric and custom-radix test vectors.",
+  "testGroups": [
+    {
+      "type": "FpeTest",
+      "radix": 36,
+      "security": "quantum-128",
+      "tests": [
+        {
+          "tcId": 1,
+          "comment": "8-char alphanumeric, zero key",
+          "key": "00000000000000000000000000000000",
+          "tweak": "74776561",
+          "plaintext": "hello123",
+          "result": "valid"
+        },
+        {
+          "tcId": 2,
+          "comment": "All zeros alphanumeric",
+          "key": "00000000000000000000000000000000",
+          "tweak": "",
+          "plaintext": "0000000000",
+          "result": "valid"
+        },
+        {
+          "tcId": 3,
+          "comment": "All z alphanumeric",
+          "key": "00000000000000000000000000000000",
+          "tweak": "",
+          "plaintext": "zzzzzzzzzz",
+          "result": "valid"
+        }
+      ]
+    },
+    {
+      "type": "FpeTest",
+      "radix": 16,
+      "security": "quantum-128",
+      "tests": [
+        {
+          "tcId": 4,
+          "comment": "16-char hex, zero key",
+          "key": "00000000000000000000000000000000",
+          "tweak": "686578",
+          "plaintext": "0123456789abcdef",
+          "result": "valid"
+        }
+      ]
+    },
+    {
+      "type": "FpeTest",
+      "radix": 4,
+      "security": "quantum-128",
+      "tests": [
+        {
+          "tcId": 5,
+          "comment": "Minimum radix (4), 8 chars",
+          "key": "00000000000000000000000000000000",
+          "tweak": "7234",
+          "plaintext": "01230123",
+          "result": "valid"
+        }
+      ]
+    },
+    {
+      "type": "FpeTest",
+      "radix": 62,
+      "security": "quantum-128",
+      "tests": [
+        {
+          "tcId": 6,
+          "comment": "Case-sensitive alphanumeric (radix 62)",
+          "key": "42424242424242424242424242424242",
+          "tweak": "74776561",
+          "plaintext": "Hello123World",
+          "result": "valid"
+        }
+      ]
+    }
+  ]
+}

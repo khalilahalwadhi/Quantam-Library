@@ -1,0 +1,16 @@
+[package]
+name = "fast-python"
+description = "Python bindings for FAST format-preserving encryption"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "fast_fpe"
+crate-type = ["cdylib"]
+
+[dependencies]
+fast-core = { path = "../fast-core" }
+fast-ff1 = { path = "../fast-ff1" }
+pyo3 = { version = "0.22", features = ["extension-module"] }

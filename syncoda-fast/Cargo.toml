@@ -1,0 +1,17 @@
+[package]
+name = "syncoda-fast"
+description = "Syncoda integration layer for quantum-safe data tokenization with FAST FPE"
+version = "0.1.0"
+edition = "2021"
+license = "Proprietary"
+
+[dependencies]
+fast-core = { path = "../fast-fpe/crates/fast-core" }
+fast-ff1 = { path = "../fast-fpe/crates/fast-ff1" }
+thiserror = "2"
+zeroize = { version = "1.7", features = ["derive"] }
+hkdf = "0.12"
+sha2 = "0.10"
+
+[dev-dependencies]
+proptest = "1"

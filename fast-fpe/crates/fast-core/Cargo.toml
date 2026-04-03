@@ -1,0 +1,27 @@
+[package]
+name = "fast-core"
+description = "FAST format-preserving encryption — quantum-safe FPE (ASIACRYPT 2021)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+aes = { workspace = true }
+cmac = { workspace = true }
+ctr = { workspace = true }
+cipher = { workspace = true }
+subtle = { workspace = true }
+zeroize = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+criterion = { workspace = true }
+fast-ff1 = { path = "../fast-ff1" }
+
+[[bench]]
+name = "throughput"
+harness = false
