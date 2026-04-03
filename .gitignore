@@ -1,0 +1,10 @@
+/target/
+/.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.so
+*.egg-info/
+/fast-fpe/target/
+/syncoda-fast/target/
+.pytest_cache/

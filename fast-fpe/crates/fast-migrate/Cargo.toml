@@ -1,0 +1,13 @@
+[package]
+name = "fast-migrate"
+description = "FF1-to-FAST migration utility for re-tokenizing existing FF1 tokens"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+fast-core = { path = "../fast-core" }
+fast-ff1 = { path = "../fast-ff1" }
+thiserror = { workspace = true }
+zeroize = { workspace = true }

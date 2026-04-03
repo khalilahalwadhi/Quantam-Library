@@ -1,0 +1,23 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "fast-fpe"
+version = "0.1.0"
+description = "FAST format-preserving encryption — quantum-safe FPE (ASIACRYPT 2021)"
+license = {text = "Apache-2.0 OR MIT"}
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Security :: Cryptography",
+]
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+module-name = "fast_fpe"
