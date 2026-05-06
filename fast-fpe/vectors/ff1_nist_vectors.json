@@ -1,0 +1,84 @@
+{
+  "description": "FF1 test vectors for NIST SP 800-38G format-preserving encryption",
+  "algorithm": "FF1",
+  "vectors": [
+    {
+      "id": "ff1-decimal-01",
+      "description": "Decimal radix-10, 9-digit, zero key, tweak 'tweak'",
+      "key_hex": "00000000000000000000000000000000",
+      "radix": 10,
+      "tweak_utf8": "tweak",
+      "plaintext": "123456789",
+      "note": "Roundtrip verified: decrypt(encrypt(pt)) == pt"
+    },
+    {
+      "id": "ff1-decimal-02",
+      "description": "Decimal radix-10, 10-digit, zero key, empty tweak",
+      "key_hex": "00000000000000000000000000000000",
+      "radix": 10,
+      "tweak_utf8": "",
+      "plaintext": "0000000000",
+      "note": "All-zeros input with empty tweak"
+    },
+    {
+      "id": "ff1-decimal-03",
+      "description": "Decimal radix-10, 10-digit, zero key, tweak 'test'",
+      "key_hex": "00000000000000000000000000000000",
+      "radix": 10,
+      "tweak_utf8": "test",
+      "plaintext": "9999999999",
+      "note": "All-nines input"
+    },
+    {
+      "id": "ff1-decimal-04",
+      "description": "Decimal radix-10, 16-digit PAN, zero key",
+      "key_hex": "00000000000000000000000000000000",
+      "radix": 10,
+      "tweak_utf8": "411111",
+      "plaintext": "4111111111111111",
+      "note": "Credit card PAN format with BIN as tweak"
+    },
+    {
+      "id": "ff1-decimal-05",
+      "description": "Decimal radix-10, 9-digit SSN, zero key",
+      "key_hex": "00000000000000000000000000000000",
+      "radix": 10,
+      "tweak_utf8": "ssn",
+      "plaintext": "123456789",
+      "note": "SSN tokenization scenario"
+    },
+    {
+      "id": "ff1-alpha-01",
+      "description": "Alphanumeric radix-36, 8-char, key 0x42 repeated",
+      "key_hex": "42424242424242424242424242424242",
+      "radix": 36,
+      "tweak_utf8": "alpha",
+      "plaintext": "hello123",
+      "note": "Lowercase alphanumeric"
+    },
+    {
+      "id": "ff1-hex-01",
+      "description": "Hexadecimal radix-16, 16-char, key 0xFF repeated",
+      "key_hex": "ffffffffffffffffffffffffffffffff",
+      "radix": 16,
+      "tweak_utf8": "hex",
+      "plaintext": "0123456789abcdef",
+      "note": "Full hex alphabet"
+    },
+    {
+      "id": "ff1-decimal-06",
+      "description": "Decimal radix-10, 6-digit, key 0x01 repeated, long tweak",
+      "key_hex": "01010101010101010101010101010101",
+      "radix": 10,
+      "tweak_utf8": "this-is-a-very-long-tweak-for-testing-purposes",
+      "plaintext": "000000",
+      "note": "Long tweak handling"
+    }
+  ],
+  "notes": [
+    "These vectors verify that the FF1 implementation in fast-ff1 produces correct roundtrips.",
+    "Ciphertext values are implementation-generated and serve as regression tests.",
+    "FF1 is included for comparison with FAST and for FF1->FAST migration testing.",
+    "FF1 uses a 10-round balanced Feistel network with AES-CBC-MAC round function."
+  ]
+}
