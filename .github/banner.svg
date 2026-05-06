@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="300" viewBox="0 0 900 300">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0e27;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1a1e3e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0d1130;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00d4ff;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#7b2fff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff2d95;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00d4ff;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#7b2fff;stop-opacity:0.3" />
+    </linearGradient>
+    <filter id="blur">
+      <feGaussianBlur stdDeviation="2" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="300" fill="url(#bg)" rx="12" />
+
+  <!-- Grid pattern -->
+  <g opacity="0.06" stroke="#00d4ff" stroke-width="0.5">
+    <line x1="0" y1="50" x2="900" y2="50" />
+    <line x1="0" y1="100" x2="900" y2="100" />
+    <line x1="0" y1="150" x2="900" y2="150" />
+    <line x1="0" y1="200" x2="900" y2="200" />
+    <line x1="0" y1="250" x2="900" y2="250" />
+    <line x1="150" y1="0" x2="150" y2="300" />
+    <line x1="300" y1="0" x2="300" y2="300" />
+    <line x1="450" y1="0" x2="450" y2="300" />
+    <line x1="600" y1="0" x2="600" y2="300" />
+    <line x1="750" y1="0" x2="750" y2="300" />
+  </g>
+
+  <!-- Quantum circuit decorations -->
+  <g opacity="0.15">
+    <!-- Qubit lines -->
+    <line x1="30" y1="60" x2="200" y2="60" stroke="#00d4ff" stroke-width="1.5" />
+    <line x1="30" y1="90" x2="200" y2="90" stroke="#00d4ff" stroke-width="1.5" />
+    <line x1="30" y1="120" x2="200" y2="120" stroke="#00d4ff" stroke-width="1.5" />
+    <!-- Gates -->
+    <rect x="60" y="48" width="24" height="24" rx="3" fill="none" stroke="#7b2fff" stroke-width="1.5" />
+    <text x="72" y="65" fill="#7b2fff" font-family="monospace" font-size="12" text-anchor="middle">H</text>
+    <rect x="110" y="78" width="24" height="24" rx="3" fill="none" stroke="#ff2d95" stroke-width="1.5" />
+    <text x="122" y="95" fill="#ff2d95" font-family="monospace" font-size="12" text-anchor="middle">S</text>
+    <circle cx="122" cy="60" r="4" fill="#00d4ff" />
+    <line x1="122" y1="64" x2="122" y2="78" stroke="#00d4ff" stroke-width="1" stroke-dasharray="3,2" />
+    <rect x="155" y="108" width="24" height="24" rx="3" fill="none" stroke="#00d4ff" stroke-width="1.5" />
+    <text x="167" y="125" fill="#00d4ff" font-family="monospace" font-size="12" text-anchor="middle">X</text>
+
+    <!-- Right side decorations -->
+    <line x1="700" y1="220" x2="870" y2="220" stroke="#00d4ff" stroke-width="1.5" />
+    <line x1="700" y1="250" x2="870" y2="250" stroke="#00d4ff" stroke-width="1.5" />
+    <rect x="730" y="208" width="24" height="24" rx="3" fill="none" stroke="#ff2d95" stroke-width="1.5" />
+    <text x="742" y="225" fill="#ff2d95" font-family="monospace" font-size="12" text-anchor="middle">P</text>
+    <rect x="790" y="238" width="24" height="24" rx="3" fill="none" stroke="#7b2fff" stroke-width="1.5" />
+    <text x="802" y="255" fill="#7b2fff" font-family="monospace" font-size="12" text-anchor="middle">H</text>
+  </g>
+
+  <!-- Accent line top -->
+  <rect x="50" y="10" width="800" height="3" rx="1.5" fill="url(#accent)" opacity="0.7" />
+
+  <!-- Shield icon -->
+  <g transform="translate(100, 130)">
+    <path d="M0,-40 L30,-28 L30,5 C30,25 15,38 0,45 C-15,38 -30,25 -30,5 L-30,-28 Z"
+          fill="none" stroke="url(#accent)" stroke-width="2.5" />
+    <path d="M0,-25 L-8,-10 L-15,-10 L-10,0 L-15,15 L0,8 L15,15 L10,0 L15,-10 L8,-10 Z"
+          fill="url(#accent)" opacity="0.6" />
+  </g>
+
+  <!-- Main title -->
+  <text x="450" y="115" fill="white" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+        font-size="56" font-weight="700" text-anchor="middle" letter-spacing="3">
+    FAST-FPE
+  </text>
+
+  <!-- Glow effect behind title -->
+  <text x="450" y="115" fill="url(#accent)" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+        font-size="56" font-weight="700" text-anchor="middle" letter-spacing="3" opacity="0.3" filter="url(#blur)">
+    FAST-FPE
+  </text>
+
+  <!-- Subtitle -->
+  <text x="450" y="155" fill="#a0a8d0" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+        font-size="18" font-weight="400" text-anchor="middle" letter-spacing="1">
+    Quantum-Safe Format-Preserving Encryption
+  </text>
+
+  <!-- Tag line -->
+  <text x="450" y="185" fill="#6670a0" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+        font-size="14" font-weight="300" text-anchor="middle" letter-spacing="2">
+    SPN Architecture  |  Immune to Simon's Algorithm  |  Rust + Python
+  </text>
+
+  <!-- Badge bar -->
+  <g transform="translate(220, 210)">
+    <!-- ASIACRYPT 2021 badge -->
+    <rect x="0" y="0" width="130" height="26" rx="13" fill="#1a1e3e" stroke="#7b2fff" stroke-width="1" />
+    <text x="65" y="17" fill="#b4a0ff" font-family="monospace" font-size="11" text-anchor="middle">ASIACRYPT 2021</text>
+
+    <!-- Rust badge -->
+    <rect x="145" y="0" width="70" height="26" rx="13" fill="#1a1e3e" stroke="#00d4ff" stroke-width="1" />
+    <text x="180" y="17" fill="#80e8ff" font-family="monospace" font-size="11" text-anchor="middle">Rust</text>
+
+    <!-- Python badge -->
+    <rect x="230" y="0" width="80" height="26" rx="13" fill="#1a1e3e" stroke="#00d4ff" stroke-width="1" />
+    <text x="270" y="17" fill="#80e8ff" font-family="monospace" font-size="11" text-anchor="middle">Python</text>
+
+    <!-- Quantum Safe badge -->
+    <rect x="325" y="0" width="120" height="26" rx="13" fill="#1a1e3e" stroke="#ff2d95" stroke-width="1" />
+    <text x="385" y="17" fill="#ff80c0" font-family="monospace" font-size="11" text-anchor="middle">Quantum Safe</text>
+  </g>
+
+  <!-- Accent line bottom -->
+  <rect x="50" y="287" width="800" height="3" rx="1.5" fill="url(#accent)" opacity="0.7" />
+</svg>
