@@ -1,3 +1,16 @@
+<p align="center">
+  <img src="../.github/banner.svg" alt="FAST-FPE" width="900" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/rust-1.70+-orange?logo=rust" alt="Rust" />
+  <img src="https://img.shields.io/badge/python-3.8+-blue?logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/license-MIT%2FApache--2.0-green" alt="License" />
+  <img src="https://img.shields.io/badge/ASIACRYPT-2021-blueviolet" alt="ASIACRYPT 2021" />
+  <img src="https://img.shields.io/badge/quantum-safe-ff2d95" alt="Quantum Safe" />
+  <img src="https://img.shields.io/badge/unsafe-forbidden-success" alt="No Unsafe" />
+</p>
+
 # fast-fpe
 
 **FAST format-preserving encryption** — the first production-grade Rust/Python implementation of the quantum-safe FPE scheme from ASIACRYPT 2021.
@@ -8,11 +21,11 @@ FAST (Format-preserving Addition Substitution Transformation) is a format-preser
 
 | Property | FAST | FF1 | FF3-1 |
 |---|---|---|---|
-| Architecture | SPN | 10-round Feistel | 8-round Feistel |
-| Quantum safety | Explicit parameters | Vulnerable (Simon's) | Vulnerable + classical attacks |
+| Architecture | **SPN** | 10-round Feistel | 8-round Feistel |
+| Quantum safety | **Explicit parameters** | Vulnerable (Simon's) | Vulnerable + classical attacks |
 | NIST status | Not standardized | SP 800-38G | **Withdrawn** (Feb 2025) |
 | Hot-path AES calls | **0** (table lookups only) | 10+ per encrypt | 8+ per encrypt |
-| Batch performance | Very fast (amortized setup) | Linear | Linear |
+| Batch performance | **Very fast** (amortized setup) | Linear | Linear |
 | Minimum radix | 4 | 2 | 2 |
 | Published | ASIACRYPT 2021 | 2016 | 2016 |
 
@@ -85,6 +98,35 @@ for plaintext in plaintexts {
 }
 ```
 
+## How FAST Works
+
+### The SPN Round Function
+
+Each of the `n` rounds applies four operations to the active position:
+
+```
+P1  — Addition:       x₀ ← (x₀ + x_{ℓ-1}) mod a
+P2  — Substitution:   x₀ ← σ[seq[r]](x₀)
+P1' — Subtraction:    x₀ ← (x₀ - x_w) mod a
+P3  — Circular shift: x ← rotate_left(x, 1)
+```
+
+After the shift, the next round operates on a different position. After `ℓ` rounds, every position has been transformed — unlike Feistel networks, where one half passes through unchanged.
+
+### Key Schedule
+
+1. `AES-CMAC(K, tweak || format)` → master seed
+2. Master → `K_SEQ` (round sequence) + `K_S` (S-box generation)
+3. `AES-256-CTR(K_SEQ)` → round S-box selection sequence
+4. `AES-256-CTR(K_S)` → 256 random permutation S-boxes via Fisher-Yates shuffle
+
+### Security Levels
+
+| Level | Rounds per Position | Total Rounds (10-digit) | Quantum Resistant |
+|-------|--------------------|-----------------------|-------------------|
+| `Classical128` | `ceil(256 / log₂(a))` | ~780 | Partial |
+| `Quantum128` | `ceil(384 / log₂(a))` | ~1160 | **Yes** |
+
 ## Supported Domains
 
 | Domain | Radix | Characters |
@@ -97,18 +139,13 @@ for plaintext in plaintexts {
 
 Radixes 2 and 3 are excluded because they create parity constraints that reduce the effective security of the SPN construction.
 
-## Security Model
+## Security Properties
 
-FAST provides SPRP (Strong Pseudorandom Permutation) security under the assumption that AES is a secure PRF. The security proof bounds depend on:
-
-- **Block length** (ℓ): longer blocks → better security
-- **Radix** (a): larger alphabet → fewer rounds needed
-- **Round count** (n): more rounds → higher security margin
-
-### Security Levels
-
-- **`Classical128`**: L1 = L2 = 2s (standard parameters)
-- **`Quantum128`**: L1 = L2 = 3s (50% more rounds for quantum resistance)
+- **SPRP security** under the standard AES PRF assumption
+- **Constant-time S-box lookups** — linear scan with `subtle::ConditionallySelectable`
+- **Zeroize on drop** — all key material implements `zeroize::ZeroizeOnDrop`
+- **No unsafe code** — `#![forbid(unsafe_code)]` across the entire workspace
+- **Neural cryptanalysis verified** — 7/7 TensorFlow/Keras tests pass ([details](docs/whitepaper.md))
 
 ## FF1 → FAST Migration
 
@@ -122,6 +159,45 @@ let migrator = Ff1ToFastMigrator::new(
 )?;
 
 let fast_token = migrator.migrate_token(&ff1_token, &ff1_tweak, &fast_tweak)?;
+
+// Batch migration with progress
+let results = migrator.migrate_batch(&tweak, &tokens, |done, total| {
+    println!("{done}/{total}");
+})?;
+```
+
+## Crate Structure
+
+```
+fast-fpe/
+├── crates/
+│   ├── fast-core/       # Core FAST algorithm (#![forbid(unsafe_code)])
+│   ├── fast-ff1/        # FF1 for comparison and migration
+│   ├── fast-migrate/    # FF1 → FAST re-tokenization
+│   └── fast-python/     # PyO3/maturin Python bindings
+├── vectors/             # Test vectors (JSON)
+└── docs/
+    └── whitepaper.md    # "The Quantum FPE Crisis"
+```
+
+## Building & Testing
+
+```bash
+# All Rust tests
+cargo test --all
+
+# Benchmarks
+cargo bench --package fast-core
+
+# Python bindings
+cd crates/fast-python
+pip install maturin
+maturin develop --release
+pytest python/tests/
+
+# Quantum resistance verification (requires tensorflow)
+pip install tensorflow numpy
+python python/tests/test_quantum_resistance.py
 ```
 
 ## PCI DSS Considerations
@@ -131,14 +207,6 @@ FAST is **not** NIST-approved and therefore may not satisfy PCI DSS requirements
 1. Consult their QSA about using non-NIST FPE algorithms
 2. Consider using FAST alongside (not replacing) NIST-approved encryption
 3. Document the quantum-security rationale for any deviation
-
-## Crate Structure
-
-- **`fast-core`** — Core FAST algorithm (`#![forbid(unsafe_code)]`, no_std compatible)
-- **`fast-ff1`** — FF1 implementation for comparison and migration
-- **`fast-migrate`** — FF1→FAST re-tokenization utility
-- **`fast-python`** — Python bindings via PyO3/maturin
-- **`syncoda-fast`** — Enterprise integration layer for Syncoda
 
 ## Citation
 
