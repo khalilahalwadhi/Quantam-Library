@@ -1,0 +1,28 @@
+title: FAST-FPE
+description: Quantum-Safe Format-Preserving Encryption — SPN architecture immune to Simon's algorithm
+baseurl: "/Quantam-Library"
+url: "https://khalilahalwadhi.github.io"
+theme: null
+remote_theme: null
+
+plugins:
+  - jekyll-seo-tag
+
+author:
+  name: Khalilah Aisha al-Wadhi
+
+twitter:
+  card: summary_large_image
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+
+exclude:
+  - fast-fpe/target
+  - fast-fpe/Cargo.lock
+  - .venv
+  - "*.rs"
+  - "*.toml"

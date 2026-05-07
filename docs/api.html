@@ -1,0 +1,242 @@
+---
+layout: default
+title: API Documentation
+description: "FAST-FPE API reference for Rust and Python — encryption, decryption, batch operations, migration."
+---
+
+<div class="section" style="padding-top: 8rem;">
+  <div class="section-header">
+    <h2>API Documentation</h2>
+    <p>Rust core library with Python bindings via PyO3</p>
+  </div>
+
+  <h3>Installation</h3>
+
+  <h4 style="margin-top: 1.5rem; color: var(--accent);">Rust</h4>
+  <pre><code># Add to your Cargo.toml
+[dependencies]
+fast-core = { path = "fast-fpe/crates/fast-core" }
+fast-ff1 = { path = "fast-fpe/crates/fast-ff1" }       # Optional: FF1 comparison
+fast-migrate = { path = "fast-fpe/crates/fast-migrate" } # Optional: migration</code></pre>
+
+  <h4 style="margin-top: 1.5rem; color: var(--accent);">Python</h4>
+  <pre><code># Build from source
+cd fast-fpe/crates/fast-python
+pip install maturin
+maturin develop --release
+
+# Then import
+from fast_fpe import FastCipher, Ff1Cipher</code></pre>
+</div>
+
+<div class="section">
+  <h2>Core API — <code>FastCipher</code></h2>
+
+  <h3 style="margin-top: 2rem;">Creating a Cipher</h3>
+
+  <h4 style="color: var(--accent);">Rust</h4>
+  <pre><code>use fast_core::{FastCipher, FastKey, Domain, SecurityLevel};
+
+// 16-byte key (AES-128) or 32-byte key (AES-256)
+let key = FastKey::new(&[0x42u8; 16])?;
+
+// Choose domain and security level
+let cipher = FastCipher::new(
+    &key,
+    Domain::Decimal,             // radix 10: digits 0-9
+    SecurityLevel::Quantum128,   // quantum-resistant parameters
+)?;</code></pre>
+
+  <h4 style="color: var(--accent);">Python</h4>
+  <pre><code>from fast_fpe import FastCipher
+
+cipher = FastCipher(
+    key=b'\x42' * 16,       # 16 or 32 bytes
+    radix=10,                # 10=decimal, 36=alphanumeric, 62=mixed-case
+    security="quantum-128",  # "classical-128" or "quantum-128"
+)</code></pre>
+
+  <h3 style="margin-top: 2rem;">Encrypt &amp; Decrypt</h3>
+
+  <h4 style="color: var(--accent);">Rust</h4>
+  <pre><code>// Encrypt with a tweak (domain separator)
+let ciphertext = cipher.encrypt(b"my-tweak", "123456789")?;
+// → "847920134" (9 decimal digits, same format)
+
+// Decrypt with the same tweak
+let plaintext = cipher.decrypt(b"my-tweak", &ciphertext)?;
+assert_eq!(plaintext, "123456789");</code></pre>
+
+  <h4 style="color: var(--accent);">Python</h4>
+  <pre><code>ct = cipher.encrypt(tweak=b"my-tweak", plaintext="123456789")
+pt = cipher.decrypt(tweak=b"my-tweak", ciphertext=ct)
+assert pt == "123456789"</code></pre>
+
+  <div class="alert alert-warn">
+    <strong>Tweak must match.</strong> Decryption requires the exact same tweak used for encryption. Different tweaks produce different ciphertexts for the same plaintext — this is by design for domain separation.
+  </div>
+</div>
+
+<div class="section">
+  <h2>Supported Domains</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Domain (Rust)</th><th>Radix (Python)</th><th>Characters</th><th>Use Case</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>Domain::Decimal</code></td><td><code>radix=10</code></td><td><code>0-9</code></td><td>PANs, SSNs, phone numbers</td></tr>
+        <tr><td><code>Domain::LowerAlpha</code></td><td><code>radix=26</code></td><td><code>a-z</code></td><td>Names, identifiers</td></tr>
+        <tr><td><code>Domain::Alphanumeric</code></td><td><code>radix=36</code></td><td><code>0-9, a-z</code></td><td>License plates, codes</td></tr>
+        <tr><td><code>Domain::AlphanumericCase</code></td><td><code>radix=62</code></td><td><code>0-9, a-z, A-Z</code></td><td>Tokens, mixed-case IDs</td></tr>
+        <tr><td><code>Domain::Custom { radix: n }</code></td><td><code>radix=n</code></td><td>First n of <code>0-9a-z...</code></td><td>Any alphabet (radix &ge; 4)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Batch Operations</h2>
+  <p>For high-throughput tokenization, pre-compute the cipher state once and reuse it. This amortizes the expensive key setup (S-box generation) across millions of operations.</p>
+
+  <h4 style="color: var(--accent);">Rust</h4>
+  <pre><code>use fast_core::{FastCipher, FastCipherState, FastKey, Domain, SecurityLevel};
+
+let key = FastKey::new(&[0x42u8; 16])?;
+
+// Pre-compute state once (expensive: S-box generation + round sequence)
+let state = FastCipherState::setup(
+    &key,
+    b"411111",                   // tweak (e.g., BIN for credit cards)
+    10,                          // radix
+    6,                           // block length
+    SecurityLevel::Quantum128,
+)?;
+let mapping = Domain::Decimal.mapping();
+
+// Encrypt millions — each call is pure table lookups, zero AES
+for plaintext in &plaintexts {
+    let ct = FastCipher::encrypt_with_state(&state, plaintext, mapping.as_ref())?;
+    // process ct...
+}
+
+// Decrypt with same state
+for ciphertext in &ciphertexts {
+    let pt = FastCipher::decrypt_with_state(&state, ciphertext, mapping.as_ref())?;
+}</code></pre>
+</div>
+
+<div class="section">
+  <h2>Credit Card Tokenization</h2>
+  <p>Preserve the BIN (first 6) and last 4, encrypt the middle digits with BIN as tweak:</p>
+
+  <h4 style="color: var(--accent);">Rust</h4>
+  <pre><code>let key = FastKey::new(&[0x42u8; 16])?;
+let cipher = FastCipher::new(&key, Domain::Decimal, SecurityLevel::Quantum128)?;
+
+let pan = "4111111111111111";
+let bin = &pan[..6];          // "411111" — preserved
+let middle = &pan[6..12];     // "111111" — encrypted
+let last4 = &pan[12..];       // "1111" — preserved
+
+let tokenized = cipher.encrypt(bin.as_bytes(), middle)?;
+let token = format!("{bin}{tokenized}{last4}");
+// → "411111XXXXXX1111" — valid 16-digit PAN</code></pre>
+
+  <h4 style="color: var(--accent);">Python</h4>
+  <pre><code>pan = "4111111111111111"
+bin_prefix = pan[:6]
+middle = pan[6:12]
+last4 = pan[12:]
+
+tokenized_middle = cipher.encrypt(tweak=bin_prefix.encode(), plaintext=middle)
+token = bin_prefix + tokenized_middle + last4</code></pre>
+</div>
+
+<div class="section">
+  <h2>FF1 Comparison &amp; Migration</h2>
+
+  <h3>FF1 Cipher</h3>
+  <pre><code># Python
+from fast_fpe import Ff1Cipher
+
+ff1 = Ff1Cipher(key=b'\x00' * 16, radix=10)
+ct = ff1.encrypt(tweak=b"tweak", plaintext="123456789")
+pt = ff1.decrypt(tweak=b"tweak", ciphertext=ct)</code></pre>
+
+  <h3 style="margin-top: 2rem;">FF1 → FAST Migration</h3>
+  <pre><code>use fast_migrate::Ff1ToFastMigrator;
+
+let migrator = Ff1ToFastMigrator::new(
+    &ff1_key,                    // existing FF1 key
+    &fast_key,                   // new FAST key
+    10,                          // radix
+    SecurityLevel::Quantum128,
+)?;
+
+// Single token
+let new_token = migrator.migrate_token(&old_token, &ff1_tweak, &fast_tweak)?;
+
+// Batch with progress
+let results = migrator.migrate_batch(&tweak, &tokens, |done, total| {
+    println!("Progress: {done}/{total}");
+})?;</code></pre>
+</div>
+
+<div class="section">
+  <h2>Security Levels</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Level</th><th>Rounds per Position</th><th>Total Rounds (10-digit)</th><th>Quantum Resistant</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Classical128</code></td>
+          <td>ceil(256 / log&#8322;(a))</td>
+          <td>~780</td>
+          <td>Partial (Grover mitigation only)</td>
+        </tr>
+        <tr>
+          <td><code>Quantum128</code></td>
+          <td>ceil(384 / log&#8322;(a))</td>
+          <td class="highlight">~1160</td>
+          <td class="pass">Yes</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert alert-warn">
+    <strong>Recommendation:</strong> Use <code>Quantum128</code> for all new deployments. The 50% round increase is a small performance cost for quantum resistance insurance.
+  </div>
+</div>
+
+<div class="section">
+  <h2>Error Handling</h2>
+
+  <h4 style="color: var(--accent);">Rust — Error Types</h4>
+  <pre><code>// CipherError variants:
+CipherError::InvalidLength { expected, got }  // wrong plaintext length for state
+CipherError::InvalidCharacter { ch, radix }   // character outside domain
+CipherError::RadixTooSmall { min, got }       // radix < 4
+CipherError::InputTooShort { min, got }       // block length < 2
+
+// SetupError variants:
+SetupError::InvalidKeyLength(len)             // key not 16 or 32 bytes
+SetupError::Param(ParamError)                 // invalid parameters</code></pre>
+
+  <h4 style="color: var(--accent);">Python — Exceptions</h4>
+  <pre><code>from fast_fpe import InvalidInput
+
+try:
+    cipher = FastCipher(key=b'\x00' * 8, radix=10, security="quantum-128")
+except InvalidInput as e:
+    print(f"Error: {e}")  # "invalid key length: expected 16 or 32 bytes, got 8"</code></pre>
+</div>
+
+<div class="section" style="text-align: center;">
+  <a href="https://github.com/khalilahalwadhi/Quantam-Library" class="btn btn-primary">View Source on GitHub</a>
+</div>

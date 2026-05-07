@@ -1,0 +1,198 @@
+---
+layout: default
+title: Quantum-Safe Format-Preserving Encryption
+description: "FAST-FPE: The first production-grade quantum-safe format-preserving encryption library. SPN architecture immune to Simon's algorithm. Rust + Python."
+---
+
+<div class="hero">
+  <span class="hero-badge">ASIACRYPT 2021</span>
+  <h1>FAST-FPE</h1>
+  <p class="hero-sub">
+    The first production-grade <strong>quantum-safe</strong> format-preserving encryption library.
+    SPN architecture that is structurally immune to Simon's quantum algorithm.
+  </p>
+  <div class="hero-buttons">
+    <a href="https://github.com/khalilahalwadhi/Quantam-Library" class="btn btn-primary">View on GitHub</a>
+    <a href="{{ '/whitepaper' | relative_url }}" class="btn btn-outline">Read the Whitepaper</a>
+    <a href="{{ '/quantum-verification' | relative_url }}" class="btn btn-outline">Quantum Verified (7/7)</a>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <h2>The Problem</h2>
+    <p>Every deployed tokenization system is vulnerable to quantum attack</p>
+  </div>
+
+  <div class="alert">
+    <strong>FF1 and FF3-1 are Feistel networks.</strong> Simon's quantum algorithm exploits their architecture — one half of the block passes through unchanged each round.
+    This isn't a key-length problem. It's structural. More rounds don't help. Longer keys don't help.
+    <br><br>
+    NIST withdrew FF3-1 in 2025. FF1 remains specified but has a proven exponential-time quantum attack.
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">&#x1f4b3;</div>
+      <h3>Credit Card PANs</h3>
+      <p>Billions of tokenized PANs protected by FF1. Valid for 3-10 years. Quantum-vulnerable today under "harvest now, decrypt later."</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#x1f510;</div>
+      <h3>Social Security Numbers</h3>
+      <p>Permanent lifetime identifiers. Once compromised, cannot be revoked. FPE tokenization is the primary protection layer.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#x1f3e5;</div>
+      <h3>Medical Records</h3>
+      <p>HIPAA-protected data with decades of sensitivity. Healthcare tokenization systems depend entirely on Feistel-based FPE.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <h2>The Solution: SPN Instead of Feistel</h2>
+    <p>FAST transforms the entire block every round — no untouched half for Simon's algorithm</p>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>FAST</th>
+          <th>FF1</th>
+          <th>FF3-1</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Architecture</td>
+          <td class="highlight">SPN</td>
+          <td>Feistel (10 rounds)</td>
+          <td>Feistel (8 rounds)</td>
+        </tr>
+        <tr>
+          <td>Quantum safe</td>
+          <td class="pass">Yes</td>
+          <td class="danger">No (Simon's)</td>
+          <td class="danger">No (Simon's + classical)</td>
+        </tr>
+        <tr>
+          <td>NIST status</td>
+          <td>ASIACRYPT 2021</td>
+          <td>SP 800-38G</td>
+          <td class="danger">Withdrawn (2025)</td>
+        </tr>
+        <tr>
+          <td>Hot-path AES calls</td>
+          <td class="highlight">0 (table lookup)</td>
+          <td>10+ per encrypt</td>
+          <td>8+ per encrypt</td>
+        </tr>
+        <tr>
+          <td>Batch performance</td>
+          <td class="highlight">Amortized O(1) setup</td>
+          <td>Linear</td>
+          <td>Linear</td>
+        </tr>
+        <tr>
+          <td>Constant-time</td>
+          <td class="pass">Yes</td>
+          <td>Implementation-dependent</td>
+          <td>Implementation-dependent</td>
+        </tr>
+        <tr>
+          <td>Memory safety</td>
+          <td class="highlight">#![forbid(unsafe_code)]</td>
+          <td>Varies</td>
+          <td>Varies</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <h2>How FAST Works</h2>
+    <p>Four operations per round — full-block transformation with no pass-through</p>
+  </div>
+
+  <pre><code>Input: x = [x₀, x₁, x₂, ..., x_{ℓ-1}]    (each xᵢ ∈ ℤₐ)
+
+  P1  │ x₀ ← (x₀ + x_{ℓ-1}) mod a        ← Addition (key mixing)
+  P2  │ x₀ ← σ[seq[r]](x₀)               ← S-box substitution (non-linearity)
+  P1' │ x₀ ← (x₀ - x_w) mod a            ← Subtraction (cross-position diffusion)
+  P3  │ x ← rotate_left(x, 1)             ← Circular shift (position rotation)
+
+After ℓ rounds, every position has been the active position exactly once.
+Unlike Feistel: EVERY position is transformed. No pass-through half.</code></pre>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>Constant-Time S-boxes</h3>
+      <p>256 random permutation S-boxes generated via Fisher-Yates shuffle with AES-CTR. Lookups use <code>subtle::ConditionallySelectable</code> linear scan — no cache-timing leaks.</p>
+    </div>
+    <div class="card">
+      <h3>Zero AES on Hot Path</h3>
+      <p>Key schedule pre-computes all S-boxes and the round sequence. Encryption/decryption uses only modular arithmetic and table lookups — no AES calls per operation.</p>
+    </div>
+    <div class="card">
+      <h3>Two Security Levels</h3>
+      <p><code>Classical128</code>: 2s rounds per position. <code>Quantum128</code>: 3s rounds (50% more) for explicit quantum resistance margin.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <h2>Quick Start</h2>
+  </div>
+
+  <h3 style="margin-bottom: 1rem;">Rust</h3>
+  <pre><code>use fast_core::{FastCipher, FastKey, Domain, SecurityLevel};
+
+let key = FastKey::new(&[0x42u8; 16])?;
+let cipher = FastCipher::new(&key, Domain::Decimal, SecurityLevel::Quantum128)?;
+
+// Encrypt: "123456789" → 9 random-looking digits
+let token = cipher.encrypt(b"tweak", "123456789")?;
+assert_eq!(token.len(), 9);
+
+// Decrypt: recover the original
+let plain = cipher.decrypt(b"tweak", &token)?;
+assert_eq!(plain, "123456789");</code></pre>
+
+  <h3 style="margin-bottom: 1rem;">Python</h3>
+  <pre><code>from fast_fpe import FastCipher
+
+cipher = FastCipher(key=b'\x42' * 16, radix=10, security="quantum-128")
+
+token = cipher.encrypt(tweak=b"tweak", plaintext="123456789")
+plain = cipher.decrypt(tweak=b"tweak", ciphertext=token)
+assert plain == "123456789"</code></pre>
+
+  <h3 style="margin-bottom: 1rem;">Credit Card Tokenization</h3>
+  <pre><code>let pan = "4111111111111111";
+let bin = &pan[..6];           // "411111" — preserved
+let middle = &pan[6..12];      // encrypted with BIN as tweak
+let last4 = &pan[12..];        // "1111" — preserved
+
+let tokenized = cipher.encrypt(bin.as_bytes(), middle)?;
+let token = format!("{bin}{tokenized}{last4}");
+// → "411111XXXXXX1111" — valid 16-digit PAN format</code></pre>
+</div>
+
+<div class="section" style="text-align: center; padding-bottom: 6rem;">
+  <div class="section-header">
+    <h2>Get Started</h2>
+    <p>Open source. MIT + Apache 2.0. Star it. Fork it. Audit it.</p>
+  </div>
+  <div class="hero-buttons">
+    <a href="https://github.com/khalilahalwadhi/Quantam-Library" class="btn btn-primary">View on GitHub</a>
+    <a href="{{ '/api' | relative_url }}" class="btn btn-outline">Full API Docs</a>
+    <a href="{{ '/whitepaper' | relative_url }}" class="btn btn-outline">Read the Whitepaper</a>
+  </div>
+</div>
