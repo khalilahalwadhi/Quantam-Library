@@ -2,7 +2,7 @@
 
 ## Why Every Deployed Tokenization System Is Vulnerable and How FAST Fixes It
 
-**Authors:** Syncoda Research Team
+**Author:** Khalilah Aisha al-Wadhi
 **Date:** May 2026
 **Version:** 1.0
 
