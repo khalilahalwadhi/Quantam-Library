@@ -147,20 +147,15 @@ We don't just claim quantum safety — we **test it**. Our TensorFlow/Keras neur
 
 ```
 Quantam-Library/
-├── fast-fpe/                    # Open-source FPE library (MIT/Apache-2.0)
-│   ├── crates/
-│   │   ├── fast-core/           # Core FAST algorithm — SPN, S-box, key schedule
-│   │   ├── fast-ff1/            # FF1 implementation (for comparison & migration)
-│   │   ├── fast-migrate/        # FF1 → FAST batch migration utility
-│   │   └── fast-python/         # Python bindings via PyO3/maturin
-│   ├── vectors/                 # Test vectors (JSON)
-│   └── docs/
-│       └── whitepaper.md        # "The Quantum FPE Crisis" (~4,500 words)
-│
-└── syncoda-fast/                # Enterprise integration layer
-    └── src/
-        ├── tokenizer.rs         # Auto-format PAN/SSN/phone tokenization
-        └── lib.rs               # HKDF-SHA-384 from Kyber-1024, batch migration
+└── fast-fpe/                    # Open-source FPE library (MIT/Apache-2.0)
+    ├── crates/
+    │   ├── fast-core/           # Core FAST algorithm — SPN, S-box, key schedule
+    │   ├── fast-ff1/            # FF1 implementation (for comparison & migration)
+    │   ├── fast-migrate/        # FF1 → FAST batch migration utility
+    │   └── fast-python/         # Python bindings via PyO3/maturin
+    ├── vectors/                 # Test vectors (JSON)
+    └── docs/
+        └── whitepaper.md        # "The Quantum FPE Crisis" (~4,500 words)
 ```
 
 ### How FAST Works (One Round)
@@ -283,8 +278,6 @@ python python/tests/test_quantum_resistance.py
 ## License
 
 The `fast-fpe` library is dual-licensed under [MIT](fast-fpe/LICENSE-MIT) and [Apache 2.0](fast-fpe/LICENSE-APACHE).
-
-The `syncoda-fast` integration layer is licensed separately — see [syncoda-fast/](syncoda-fast/) for details.
 
 ---
 
