@@ -65,6 +65,11 @@ body {
   font-weight: 600 !important;
 }
 .nav-github:hover { opacity: 0.9; }
+.nav-sep {
+  color: var(--border);
+  font-weight: 300;
+  user-select: none;
+}
 
 /* Hero */
 .hero {
@@ -316,8 +321,9 @@ p code, li code, td code {
 @media (max-width: 768px) {
   .hero h1 { font-size: 2.5rem; }
   .hero-sub { font-size: 1.1rem; }
-  .nav-links { gap: 0.8rem; }
-  .nav-links a { font-size: 0.8rem; }
+  .nav-links { gap: 0.6rem; flex-wrap: wrap; justify-content: flex-end; }
+  .nav-links a { font-size: 0.75rem; }
+  .nav-sep { display: none; }
   .section { padding: 3rem 1.5rem; }
   .prose { padding: 6rem 1.5rem 3rem; }
 }

@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 200">
+  <defs>
+    <linearGradient id="qcb-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a1a"/>
+      <stop offset="50%" style="stop-color:#1a0a2e"/>
+      <stop offset="100%" style="stop-color:#0a1628"/>
+    </linearGradient>
+    <linearGradient id="qcb-accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00d4ff"/>
+      <stop offset="50%" style="stop-color:#7b2dff"/>
+      <stop offset="100%" style="stop-color:#ff2d95"/>
+    </linearGradient>
+    <linearGradient id="qcb-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00d4ff;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#7b2dff;stop-opacity:0.3"/>
+    </linearGradient>
+    <filter id="qcb-blur">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+  </defs>
+
+  <rect width="900" height="200" fill="url(#qcb-bg)" rx="12"/>
+
+  <!-- Grid lines -->
+  <g stroke="#ffffff" stroke-opacity="0.03" stroke-width="1">
+    <line x1="0" y1="40" x2="900" y2="40"/>
+    <line x1="0" y1="80" x2="900" y2="80"/>
+    <line x1="0" y1="120" x2="900" y2="120"/>
+    <line x1="0" y1="160" x2="900" y2="160"/>
+    <line x1="180" y1="0" x2="180" y2="200"/>
+    <line x1="360" y1="0" x2="360" y2="200"/>
+    <line x1="540" y1="0" x2="540" y2="200"/>
+    <line x1="720" y1="0" x2="720" y2="200"/>
+  </g>
+
+  <!-- Quantum circuit decorations -->
+  <g stroke="url(#qcb-glow)" stroke-width="1.5" fill="none" filter="url(#qcb-blur)">
+    <path d="M60,160 Q150,140 240,155 Q330,170 420,150"/>
+    <path d="M480,45 Q570,30 660,50 Q750,70 840,40"/>
+    <circle cx="120" cy="150" r="4" fill="#00d4ff" fill-opacity="0.4"/>
+    <circle cx="300" cy="158" r="3" fill="#7b2dff" fill-opacity="0.4"/>
+    <circle cx="600" cy="42" r="4" fill="#00d4ff" fill-opacity="0.4"/>
+    <circle cx="780" cy="48" r="3" fill="#ff2d95" fill-opacity="0.4"/>
+  </g>
+
+  <!-- Block cipher diagram -->
+  <g transform="translate(680, 70)" opacity="0.15">
+    <rect x="0" y="0" width="40" height="40" rx="4" stroke="#00d4ff" stroke-width="1.5" fill="none"/>
+    <rect x="50" y="0" width="40" height="40" rx="4" stroke="#7b2dff" stroke-width="1.5" fill="none"/>
+    <rect x="100" y="0" width="40" height="40" rx="4" stroke="#ff2d95" stroke-width="1.5" fill="none"/>
+    <line x1="40" y1="20" x2="50" y2="20" stroke="#ffffff" stroke-width="1"/>
+    <line x1="90" y1="20" x2="100" y2="20" stroke="#ffffff" stroke-width="1"/>
+    <text x="14" y="25" fill="#00d4ff" font-family="monospace" font-size="10">E</text>
+    <text x="60" y="25" fill="#7b2dff" font-family="monospace" font-size="10">⊕</text>
+    <text x="114" y="25" fill="#ff2d95" font-family="monospace" font-size="10">E</text>
+  </g>
+
+  <!-- Title -->
+  <text x="450" y="78" text-anchor="middle" fill="url(#qcb-accent)" font-family="'Inter','Helvetica Neue',sans-serif" font-weight="800" font-size="52" letter-spacing="6">QCB-AEAD</text>
+
+  <!-- Subtitle -->
+  <text x="450" y="110" text-anchor="middle" fill="#a0a0c0" font-family="'Inter','Helvetica Neue',sans-serif" font-weight="400" font-size="16" letter-spacing="2">QUANTUM CIPHERTEXT BLOCK</text>
+
+  <!-- Description -->
+  <text x="450" y="140" text-anchor="middle" fill="#6a6a8a" font-family="'Inter','Helvetica Neue',sans-serif" font-weight="300" font-size="13">Provably Q2-Secure Authenticated Encryption · ASIACRYPT 2021 · IETF RFC 9771</text>
+
+  <!-- Bottom accent line -->
+  <rect x="300" y="160" width="300" height="2" rx="1" fill="url(#qcb-accent)" opacity="0.6"/>
+
+  <!-- Syncoda badge -->
+  <text x="450" y="180" text-anchor="middle" fill="#4a4a6a" font-family="'JetBrains Mono',monospace" font-weight="400" font-size="10" letter-spacing="3">SYNCODA · KHALILAH AISHA AL-WADHI</text>
+</svg>

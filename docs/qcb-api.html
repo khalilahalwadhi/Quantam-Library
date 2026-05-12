@@ -1,0 +1,203 @@
+---
+title: "QCB API Documentation"
+description: "QCB-AEAD API reference for Rust and Python"
+---
+
+<section class="hero">
+  <h1>QCB-AEAD API</h1>
+  <p class="hero-sub">Rust &amp; Python API Reference</p>
+</section>
+
+<section class="section">
+  <h2>Rust API</h2>
+
+  <h3><code>QcbKey</code></h3>
+  <p>Represents an AES key with automatic zeroization on drop.</p>
+
+  <div class="code-block">
+    <pre><code>use qcb_core::QcbKey;
+
+// AES-256 (32 bytes)
+let key = QcbKey::new(&amp;[0x42; 32]).unwrap();
+
+// AES-128 (16 bytes)
+let key = QcbKey::new(&amp;[0x42; 16]).unwrap();
+
+// Invalid — returns Err(QcbError::InvalidKeyLength)
+let err = QcbKey::new(&amp;[0x00; 8]);</code></pre>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Method</th><th>Parameters</th><th>Returns</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>QcbKey::new(bytes)</code></td>
+        <td><code>&amp;[u8]</code> — 16 or 32 bytes</td>
+        <td><code>Result&lt;QcbKey, QcbError&gt;</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr/>
+
+  <h3><code>Qcb</code></h3>
+  <p>The main AEAD cipher. Constructed from a <code>QcbKey</code>.</p>
+
+  <div class="code-block">
+    <pre><code>use qcb_core::{Qcb, QcbKey};
+
+let key = QcbKey::new(&amp;[0x42; 32]).unwrap();
+let cipher = Qcb::new(&amp;key);</code></pre>
+  </div>
+
+  <h4><code>encrypt</code></h4>
+  <div class="code-block">
+    <pre><code>let ciphertext = cipher.encrypt(
+    &amp;nonce,           // &amp;[u8] — exactly 12 bytes
+    &amp;associated_data, // &amp;[u8] — any length (can be empty)
+    &amp;plaintext,       // &amp;[u8] — any length (can be empty)
+).unwrap();
+// ciphertext length = plaintext length + 16 (tag)</code></pre>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Parameter</th><th>Type</th><th>Constraints</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>nonce</code></td><td><code>&amp;[u8]</code></td><td>Exactly 12 bytes. Must be unique per encryption.</td></tr>
+      <tr><td><code>aad</code></td><td><code>&amp;[u8]</code></td><td>Any length. Authenticated but not encrypted.</td></tr>
+      <tr><td><code>plaintext</code></td><td><code>&amp;[u8]</code></td><td>Any length up to (2²⁴ − 1) × 16 bytes.</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Returns:</strong> <code>Result&lt;Vec&lt;u8&gt;, QcbError&gt;</code> — ciphertext with appended 16-byte authentication tag.</p>
+
+  <h4><code>decrypt</code></h4>
+  <div class="code-block">
+    <pre><code>let plaintext = cipher.decrypt(
+    &amp;nonce,
+    &amp;associated_data,
+    &amp;ciphertext_with_tag,
+).unwrap();</code></pre>
+  </div>
+
+  <p><strong>Returns:</strong> <code>Result&lt;Vec&lt;u8&gt;, QcbError&gt;</code> — plaintext on success, or <code>QcbError::AuthenticationFailed</code> if the tag doesn't verify.</p>
+
+  <hr/>
+
+  <h3><code>QcbError</code></h3>
+  <table>
+    <thead>
+      <tr><th>Variant</th><th>Meaning</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>InvalidKeyLength</code></td><td>Key is not 16 or 32 bytes</td></tr>
+      <tr><td><code>InvalidNonceLength</code></td><td>Nonce is not 12 bytes</td></tr>
+      <tr><td><code>MessageTooLong</code></td><td>Message exceeds 2²⁴ − 1 blocks</td></tr>
+      <tr><td><code>CiphertextTooShort</code></td><td>Ciphertext is shorter than 16 bytes (no tag)</td></tr>
+      <tr><td><code>AuthenticationFailed</code></td><td>Tag verification failed — data is tampered or wrong key/nonce/AAD</td></tr>
+    </tbody>
+  </table>
+
+  <hr/>
+
+  <h3>Constants</h3>
+  <table>
+    <thead>
+      <tr><th>Constant</th><th>Value</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>BLOCK_SIZE</code></td><td>16 bytes</td></tr>
+      <tr><td><code>NONCE_SIZE</code></td><td>12 bytes</td></tr>
+      <tr><td><code>TAG_SIZE</code></td><td>16 bytes</td></tr>
+      <tr><td><code>MAX_BLOCKS</code></td><td>16,777,215 (2²⁴ − 1)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="section">
+  <h2>Python API</h2>
+
+  <h3>Installation</h3>
+  <div class="code-block">
+    <pre><code>cd qcb-aead/crates/qcb-python
+pip install maturin
+maturin develop --release</code></pre>
+  </div>
+
+  <h3><code>QcbCipher</code></h3>
+  <div class="code-block">
+    <pre><code>from qcb_aead import QcbCipher, InvalidInput, AuthenticationError
+
+# Create cipher with AES-256 key
+cipher = QcbCipher(key=b"\x42" * 32)
+
+# Also supports AES-128
+cipher128 = QcbCipher(key=b"\x42" * 16)</code></pre>
+  </div>
+
+  <h4><code>encrypt(nonce, data, aad) → bytes</code></h4>
+  <div class="code-block">
+    <pre><code>ciphertext = cipher.encrypt(
+    nonce=b"\x00" * 12,
+    data=b"secret message",
+    aad=b"associated data",
+)
+# len(ciphertext) == len(data) + 16</code></pre>
+  </div>
+
+  <h4><code>decrypt(nonce, ciphertext, aad) → bytes</code></h4>
+  <div class="code-block">
+    <pre><code>try:
+    plaintext = cipher.decrypt(
+        nonce=b"\x00" * 12,
+        ciphertext=ciphertext,
+        aad=b"associated data",
+    )
+except AuthenticationError:
+    print("Tag mismatch — data was tampered!")</code></pre>
+  </div>
+
+  <h3>Exceptions</h3>
+  <table>
+    <thead>
+      <tr><th>Exception</th><th>Base</th><th>When</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>InvalidInput</code></td><td><code>ValueError</code></td><td>Bad key length, nonce length, or message too long</td></tr>
+      <tr><td><code>AuthenticationError</code></td><td><code>ValueError</code></td><td>Tag verification failed during decryption</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Complete Example</h3>
+  <div class="code-block">
+    <pre><code>from qcb_aead import QcbCipher, AuthenticationError
+import os
+
+# Generate random key
+key = os.urandom(32)
+cipher = QcbCipher(key=key)
+
+# Encrypt
+nonce = os.urandom(12)
+plaintext = b"Hello, quantum-safe world!"
+aad = b"message metadata v1"
+
+ciphertext = cipher.encrypt(nonce=nonce, data=plaintext, aad=aad)
+print(f"Ciphertext: {len(ciphertext)} bytes (plaintext: {len(plaintext)} + tag: 16)")
+
+# Decrypt
+recovered = cipher.decrypt(nonce=nonce, ciphertext=ciphertext, aad=aad)
+assert recovered == plaintext
+
+# Tamper detection
+tampered = bytearray(ciphertext)
+tampered[0] ^= 0x01
+try:
+    cipher.decrypt(nonce=nonce, ciphertext=bytes(tampered), aad=aad)
+except AuthenticationError:
+    print("Tampering detected!")</code></pre>
+  </div>
+</section>

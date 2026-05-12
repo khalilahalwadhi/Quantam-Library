@@ -1,0 +1,166 @@
+---
+title: QCB-AEAD
+description: "Quantum Ciphertext Block — the only AEAD with provable Q2-model security"
+---
+
+<section class="hero">
+  <h1>QCB-AEAD</h1>
+  <p class="hero-sub">Quantum Ciphertext Block — Provably Q2-Secure Authenticated Encryption</p>
+  <p class="hero-meta">ASIACRYPT 2021 · IETF RFC 9771 · Syncoda / Khalilah Aisha al-Wadhi</p>
+  <div class="hero-actions">
+    <a href="{{ '/qcb-whitepaper' | relative_url }}" class="btn btn-primary">Read the Whitepaper</a>
+    <a href="{{ '/qcb-api' | relative_url }}" class="btn btn-secondary">API Documentation</a>
+  </div>
+</section>
+
+<section class="section">
+  <h2>The Problem</h2>
+  <p>Every widely deployed AEAD mode — GCM, CCM, EAX, OCB, GCM-SIV — relies on algebraic structures that are broken in polynomial time by <strong>Simon's quantum period-finding algorithm</strong> when an adversary can issue superposition queries.</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>GCM</h3>
+      <p><strong>Broken.</strong> GHASH polynomial multiplication creates an exploitable period in the universal hash function.</p>
+    </div>
+    <div class="card">
+      <h3>OCB</h3>
+      <p><strong>Broken.</strong> Gray-code counter structure provides the exact periodicity Simon's algorithm needs.</p>
+    </div>
+    <div class="card">
+      <h3>GCM-SIV</h3>
+      <p><strong>Broken.</strong> POLYVAL shares the same polynomial vulnerability as GHASH.</p>
+    </div>
+    <div class="card">
+      <h3>QCB</h3>
+      <p><strong>Secure.</strong> XEX-based TBC eliminates all exploitable periodicity. Proven Q2-secure at ASIACRYPT 2021.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Security Models</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Description</th>
+        <th>GCM</th>
+        <th>OCB</th>
+        <th>QCB</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Classical</strong></td>
+        <td>No quantum computer</td>
+        <td>✓ Secure</td>
+        <td>✓ Secure</td>
+        <td>✓ Secure</td>
+      </tr>
+      <tr>
+        <td><strong>Q1</strong></td>
+        <td>Quantum computer, classical queries</td>
+        <td>✓ Secure</td>
+        <td>✓ Secure</td>
+        <td>✓ Secure</td>
+      </tr>
+      <tr>
+        <td><strong>Q2</strong></td>
+        <td>Quantum superposition queries</td>
+        <td>✗ Broken</td>
+        <td>✗ Broken</td>
+        <td><strong>✓ Secure</strong></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="section">
+  <h2>How QCB Works</h2>
+  <div class="code-block">
+    <pre>
+Plaintext:  M₁    M₂    M₃  ···  Mₘ
+             │      │      │        │
+             ▼      ▼      ▼        ▼
+           ┌────┐ ┌────┐ ┌────┐  ┌────┐
+           │Ẽ_K │ │Ẽ_K │ │Ẽ_K │  │Ẽ_K │  ← Tweak = (domain, nonce, index)
+           └────┘ └────┘ └────┘  └────┘
+             │      │      │        │
+             ▼      ▼      ▼        ▼
+Ciphertext: C₁    C₂    C₃  ···  Cₘ
+
+Checksum = M₁ ⊕ M₂ ⊕ ··· ⊕ Mₘ
+Tag = Ẽ_K(0x05‖N‖0, Checksum ⊕ AD_hash)
+    </pre>
+  </div>
+
+  <h3>XEX Tweakable Block Cipher</h3>
+  <div class="code-block">
+    <pre>
+Ẽ_K(T, X) = AES_K(X ⊕ Δ) ⊕ Δ    where Δ = AES_K(T)
+    </pre>
+  </div>
+  <p>Each tweak mask Δ is derived through a <strong>full AES encryption</strong>, eliminating the algebraic periodicity that Simon's algorithm exploits in other modes.</p>
+</section>
+
+<section class="section">
+  <h2>Quick Start</h2>
+
+  <h3>Rust</h3>
+  <div class="code-block">
+    <pre><code>use qcb_core::{Qcb, QcbKey};
+
+let key = QcbKey::new(&amp;[0x42; 32]).unwrap();
+let cipher = Qcb::new(&amp;key);
+
+let ct = cipher.encrypt(
+    &amp;[0u8; 12],       // nonce
+    b"associated data", // AAD
+    b"Hello, quantum-safe world!",
+).unwrap();
+
+let pt = cipher.decrypt(&amp;[0u8; 12], b"associated data", &amp;ct).unwrap();
+assert_eq!(pt, b"Hello, quantum-safe world!");</code></pre>
+  </div>
+
+  <h3>Python</h3>
+  <div class="code-block">
+    <pre><code>from qcb_aead import QcbCipher
+
+cipher = QcbCipher(key=b"\x42" * 32)
+ct = cipher.encrypt(nonce=b"\x00" * 12, data=b"Hello!", aad=b"metadata")
+pt = cipher.decrypt(nonce=b"\x00" * 12, ciphertext=ct, aad=b"metadata")</code></pre>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Implementation Guarantees</h2>
+  <div class="card-grid">
+    <div class="card">
+      <h3><code>#![forbid(unsafe_code)]</code></h3>
+      <p>Zero unsafe blocks. The entire library is written in safe Rust.</p>
+    </div>
+    <div class="card">
+      <h3>Constant-Time Tags</h3>
+      <p>Tag verification uses <code>subtle::ConstantTimeEq</code> to prevent timing side channels.</p>
+    </div>
+    <div class="card">
+      <h3>Zeroize on Drop</h3>
+      <p>Key material is automatically zeroed when it goes out of scope via <code>zeroize::ZeroizeOnDrop</code>.</p>
+    </div>
+    <div class="card">
+      <h3>20 Tests Passing</h3>
+      <p>Comprehensive test suite: roundtrips, edge cases, authentication, tampering, cross-key.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <h2>References</h2>
+  <ol>
+    <li>Bhaumik et al. <em>"QCB: Efficient Quantum-secure Authenticated Encryption."</em> ASIACRYPT 2021. <a href="https://eprint.iacr.org/2021/1000">ePrint 2021/1000</a></li>
+    <li>IETF RFC 9771. <em>"Selecting Symmetric Key Sizes for Quantum Computing Resistance."</em></li>
+    <li>Simon, D. <em>"On the Power of Quantum Computation."</em> SIAM J. Computing, 1997.</li>
+    <li>Kaplan et al. <em>"Breaking Symmetric Cryptosystems using Quantum Period Finding."</em> CRYPTO 2016.</li>
+  </ol>
+</section>

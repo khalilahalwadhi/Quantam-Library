@@ -1,0 +1,15 @@
+[package]
+name = "qcb-python"
+description = "Python bindings for QCB quantum-oracle-resistant AEAD"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[lib]
+name = "qcb_aead"
+crate-type = ["cdylib"]
+
+[dependencies]
+qcb-core = { path = "../qcb-core" }
+pyo3 = { version = "0.22", features = ["extension-module"] }

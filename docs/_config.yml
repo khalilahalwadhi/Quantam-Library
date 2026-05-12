@@ -1,5 +1,5 @@
-title: FAST-FPE
-description: Quantum-Safe Format-Preserving Encryption — SPN architecture immune to Simon's algorithm
+title: Quantam Library
+description: Quantum-Safe Cryptography — FAST-FPE & QCB-AEAD — immune to Simon's algorithm
 baseurl: "/Quantam-Library"
 url: "https://khalilahalwadhi.github.io"
 theme: null
